@@ -17,8 +17,29 @@ app.use(
   }),
 );
 
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+
+  res.on("finish", () => {
+    const durationMs = Date.now() - startedAt;
+    console.log(
+      `${new Date().toISOString()} ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`,
+    );
+  });
+
+  next();
+});
+
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Invoice API is running" });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use("/api", apiRoutes);
