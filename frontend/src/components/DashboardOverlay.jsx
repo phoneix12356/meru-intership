@@ -1,5 +1,5 @@
-﻿import { useEffect, useState } from "react";
-import { Plus, LayoutDashboard, Receipt, Loader2, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, LayoutDashboard, Receipt, Loader2, LogOut, Send, HandCoins } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import CreateInvoiceModal from "./CreateInvoiceModal";
 import api from "../api/api";
@@ -43,6 +43,13 @@ const DashboardOverlay = () => {
     navigate("/login", { replace: true });
   };
 
+  const sentInvoicesCount = invoices.length;
+  const totalReceivedAmount = invoices.reduce((sum, invoice) => sum + (Number(invoice.amountPaid) || 0), 0);
+  const paidInvoicesCount = invoices.filter((invoice) => (Number(invoice.amountPaid) || 0) > 0).length;
+  const uniqueCurrencies = [...new Set(invoices.map((invoice) => invoice.currency).filter(Boolean))];
+  const hasSingleCurrency = uniqueCurrencies.length <= 1;
+  const displayCurrency = uniqueCurrencies[0] || "USD";
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -74,6 +81,43 @@ const DashboardOverlay = () => {
               Logout
             </button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sent Invoices</p>
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Send className="w-5 h-5" />
+              </div>
+            </div>
+            <p className="text-3xl font-black text-slate-900">{sentInvoicesCount}</p>
+            <p className="text-sm text-slate-500 mt-1">Total invoices created</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Received Payments</p>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <HandCoins className="w-5 h-5" />
+              </div>
+            </div>
+            <p className="text-3xl font-black text-slate-900">
+              {hasSingleCurrency ? formatCurrency(totalReceivedAmount, displayCurrency) : `${paidInvoicesCount} invoices paid`}
+            </p>
+            <p className="text-sm text-slate-500 mt-1">
+              {hasSingleCurrency ? "Amount collected so far" : "Multiple currencies detected"}
+            </p>
+          </motion.div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
